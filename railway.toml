@@ -1,5 +1,5 @@
 [build]
-buildCommand = "npm run build"
+buildCommand = "npm install"
 
 [deploy]
-startCommand = "node dist/index.js"
+startCommand = "npx shopify-mcp"
