@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import dotenv from "dotenv";
 import { GraphQLClient } from "graphql-request";
 import minimist from "minimist";
-
+import { randomUUID } from "crypto";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { ShopifyAuth } from "./lib/shopifyAuth.js";
 import { tools } from "./tools/registry.js";
 
@@ -109,11 +109,48 @@ for (const tool of tools) {
   );
 }
 
-// Start the server
-const transport = new StdioServerTransport();
-server
-  .connect(transport)
-  .then(() => {})
-  .catch((error: unknown) => {
-    console.error("Failed to start Shopify MCP Server:", error);
-  });
+// Start HTTP server (required for Claude.ai remote MCP)
+const PORT = process.env.PORT || 3000;
+const sessions = new Map<string, StreamableHTTPServerTransport>();
+
+const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+  // Health check
+  if (req.method === "GET" && req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok" }));
+    return;
+  }
+
+  // MCP endpoint
+  if (req.url === "/mcp") {
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+    // Reuse existing session or create new one
+    let transport = sessionId ? sessions.get(sessionId) : undefined;
+
+    if (!transport) {
+      transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => randomUUID(),
+        onsessioninitialized: (id) => {
+          sessions.set(id, transport!);
+        }
+      });
+      transport.onclose = () => {
+        if (transport?.sessionId) sessions.delete(transport.sessionId);
+      };
+      await server.connect(transport);
+    }
+
+    await transport.handleRequest(req, res);
+    return;
+  }
+
+  // 404 for everything else
+  res.writeHead(404);
+  res.end("Not found");
+});
+
+httpServer.listen(PORT, () => {
+  console.log(`Shopify MCP Server running on port ${PORT}`);
+  console.log(`MCP endpoint: /mcp`);
+});
