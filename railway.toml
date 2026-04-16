@@ -1,5 +1,6 @@
 [build]
-buildCommand = "npm install"
+buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "npx shopify-mcp"
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
