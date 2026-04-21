@@ -1,5 +1,5 @@
 [phases.build]
-cmds = ["pip install -r requirements.txt"]
+cmds = ["npm install && npm run build"]
 
 [start]
-cmd = "python shopify_sync.py"
+cmd = "node dist/index.js"
