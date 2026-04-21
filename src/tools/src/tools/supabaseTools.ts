@@ -1,10 +1,18 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SECRET_KEY!
-);
+// Lazy initialization - only connects at runtime, not during build
+let _supabase: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient {
+  if (!_supabase) {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SECRET_KEY;
+    if (!url || !key) throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY must be set");
+    _supabase = createClient(url, key);
+  }
+  return _supabase;
+}
 
 export const supabaseQueryTool = {
   name: "query_supabase",
@@ -26,6 +34,7 @@ export const supabaseQueryTool = {
     order_by?: string;
     order_asc?: boolean;
   }) => {
+    const supabase = getSupabase();
     let query = supabase
       .from(args.table)
       .select(args.select || "*")
@@ -55,6 +64,7 @@ export const supabaseRawSqlTool = {
   }),
   initialize: (_client: unknown) => {},
   execute: async (args: { sql: string }) => {
+    const supabase = getSupabase();
     const { data, error } = await supabase.rpc("execute_sql", { query: args.sql });
     if (error) throw new Error(`SQL error: ${error.message}`);
     return { rows: data };
