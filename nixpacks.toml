@@ -1,5 +1,10 @@
 [phases.build]
 cmds = ["npm install && npm run build"]
 
+[phases.build.env]
+SUPABASE_URL = ""
+SUPABASE_SECRET_KEY = ""
+DATABASE_URL = ""
+
 [start]
 cmd = "node dist/index.js"
