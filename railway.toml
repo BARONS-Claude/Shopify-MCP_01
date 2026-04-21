@@ -1,7 +1,5 @@
-[build]
-builder = "nixpacks"
-buildCommand = "pip install -r requirements.txt"
-
 [deploy]
-startCommand = "python shopify_sync.py"
-restartPolicyType = "always"
+startCommand = "node dist/index.js"
+
+[build]
+buildCommand = "npm install && npm run build"
