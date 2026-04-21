@@ -1,6 +1,7 @@
 [build]
-buildCommand = "npm install && npm run build"
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-startCommand = "npm start"
-restartPolicyType = "ON_FAILURE"
+startCommand = "python shopify_sync.py"
+restartPolicyType = "always"
