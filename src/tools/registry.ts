@@ -1,5 +1,4 @@
 import type { ShopifyTool } from "../lib/toolUtils.js";
-
 // Product tools
 import { getProducts } from "./getProducts.js";
 import { getProductById } from "./getProductById.js";
@@ -9,7 +8,6 @@ import { deleteProduct } from "./deleteProduct.js";
 import { manageProductVariants } from "./manageProductVariants.js";
 import { deleteProductVariants } from "./deleteProductVariants.js";
 import { manageProductOptions } from "./manageProductOptions.js";
-
 // Order tools
 import { getOrders } from "./getOrders.js";
 import { getOrderById } from "./getOrderById.js";
@@ -21,7 +19,6 @@ import { orderCloseOpen } from "./orderCloseOpen.js";
 import { orderMarkAsPaid } from "./orderMarkAsPaid.js";
 import { createFulfillment } from "./createFulfillment.js";
 import { createRefund } from "./createRefund.js";
-
 // Customer tools
 import { getCustomers } from "./getCustomers.js";
 import { getCustomerById } from "./getCustomerById.js";
@@ -31,34 +28,31 @@ import { updateCustomer } from "./updateCustomer.js";
 import { deleteCustomer } from "./deleteCustomer.js";
 import { mergeCustomers } from "./mergeCustomers.js";
 import { manageCustomerAddress } from "./manageCustomerAddress.js";
-
 // Metafield tools
 import { getMetafields } from "./getMetafields.js";
 import { setMetafields } from "./setMetafields.js";
 import { deleteMetafields } from "./deleteMetafields.js";
-
 // Convenience / cross-resource tools
 import { manageTags } from "./manageTags.js";
 import { setInventoryQuantities } from "./setInventoryQuantities.js";
-
 // Configuration & discovery tools
 import { getShopInfo } from "./getShopInfo.js";
 import { getMetafieldDefinitions } from "./getMetafieldDefinitions.js";
 import { getLocations } from "./getLocations.js";
 import { getMarkets } from "./getMarkets.js";
 import { getCollections } from "./getCollections.js";
-
 // Enhanced order & fulfillment tools
 import { getOrderTransactions } from "./getOrderTransactions.js";
 import { getFulfillmentOrders } from "./getFulfillmentOrders.js";
 import { getOrderRefundDetails } from "./getOrderRefundDetails.js";
 import { getCollectionById } from "./getCollectionById.js";
-
 // Inventory & pricing read tools
 import { getInventoryLevels } from "./getInventoryLevels.js";
 import { getInventoryItems } from "./getInventoryItems.js";
 import { getPriceLists } from "./getPriceLists.js";
 import { getProductVariantsDetailed } from "./getProductVariantsDetailed.js";
+// Supabase analytics tools
+import { supabaseQueryTool, supabaseRawSqlTool } from "./supabaseTools.js";
 
 export const tools: ShopifyTool[] = [
   // Products (8)
@@ -113,4 +107,7 @@ export const tools: ShopifyTool[] = [
   getInventoryItems,
   getPriceLists,
   getProductVariantsDetailed,
+  // Supabase analytics (2)
+  supabaseQueryTool,
+  supabaseRawSqlTool,
 ];
