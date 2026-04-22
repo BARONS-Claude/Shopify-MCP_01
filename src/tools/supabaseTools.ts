@@ -7,6 +7,8 @@ function getSupabase(): SupabaseClient {
   if (!_supabase) {
     const url = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_SECRET_KEY;
+    console.log(`[Supabase] Initializing with URL: ${url ? url : 'MISSING'}`);
+    console.log(`[Supabase] Key present: ${key ? 'YES' : 'MISSING'}`);
     if (!url || !key) throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY must be set");
     _supabase = createClient(url, key);
   }
@@ -33,25 +35,38 @@ export const supabaseQueryTool = {
     order_by?: string;
     order_asc?: boolean;
   }) => {
-    const supabase = getSupabase();
-    let query = supabase
-      .from(args.table)
-      .select(args.select || "*")
-      .limit(args.limit || 100);
+    try {
+      console.log(`[Supabase] Querying table: ${args.table}`);
+      const supabase = getSupabase();
 
-    if (args.filters) {
-      for (const [key, value] of Object.entries(args.filters)) {
-        query = query.eq(key, value);
+      let query = supabase
+        .from(args.table)
+        .select(args.select || "*")
+        .limit(args.limit || 100);
+
+      if (args.filters) {
+        for (const [key, value] of Object.entries(args.filters)) {
+          query = query.eq(key, value);
+        }
       }
-    }
 
-    if (args.order_by) {
-      query = query.order(args.order_by, { ascending: args.order_asc ?? false });
-    }
+      if (args.order_by) {
+        query = query.order(args.order_by, { ascending: args.order_asc ?? false });
+      }
 
-    const { data, error } = await query;
-    if (error) throw new Error(`Supabase error: ${error.message}`);
-    return { rows: data, count: data?.length };
+      const { data, error } = await query;
+
+      if (error) {
+        console.error(`[Supabase] Query error:`, JSON.stringify(error));
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      console.log(`[Supabase] Success, rows returned: ${data?.length}`);
+      return { rows: data, count: data?.length };
+    } catch (err) {
+      console.error(`[Supabase] Exception in query_supabase:`, err);
+      throw err;
+    }
   }
 };
 
@@ -59,13 +74,26 @@ export const supabaseRawSqlTool = {
   name: "query_supabase_sql",
   description: "Run raw SQL against the BARONS Supabase database. Use for complex PnL calculations, forecasting, cross-market aggregations and joins.",
   schema: z.object({
-    sql: z.string().describe("SQL query e.g. 'SELECT market, SUM(revenue) FROM analytics__orders GROUP BY market ORDER BY SUM(revenue) DESC'")
+    sql: z.string().describe("SQL query e.g. 'SELECT country_code, SUM(net_sales_current) FROM analytics__commercial_report GROUP BY country_code ORDER BY SUM(net_sales_current) DESC'")
   }),
   initialize: (_client: unknown) => {},
   execute: async (args: { sql: string }) => {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.rpc("execute_sql", { query: args.sql });
-    if (error) throw new Error(`SQL error: ${error.message}`);
-    return { rows: data };
+    try {
+      console.log(`[Supabase] Running SQL: ${args.sql}`);
+      const supabase = getSupabase();
+
+      const { data, error } = await supabase.rpc("execute_sql", { query: args.sql });
+
+      if (error) {
+        console.error(`[Supabase] SQL error:`, JSON.stringify(error));
+        throw new Error(`SQL error: ${error.message}`);
+      }
+
+      console.log(`[Supabase] SQL success`);
+      return { rows: data };
+    } catch (err) {
+      console.error(`[Supabase] Exception in query_supabase_sql:`, err);
+      throw err;
+    }
   }
 };
