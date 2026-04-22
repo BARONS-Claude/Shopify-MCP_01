@@ -10,7 +10,16 @@ function getSupabase(): SupabaseClient {
     console.log(`[Supabase] Initializing with URL: ${url ? url : 'MISSING'}`);
     console.log(`[Supabase] Key present: ${key ? 'YES' : 'MISSING'}`);
     if (!url || !key) throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY must be set");
-    _supabase = createClient(url, key);
+    _supabase = createClient(url, key, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      db: {
+        schema: 'public'
+      }
+    });
+    console.log(`[Supabase] Client created successfully`);
   }
   return _supabase;
 }
