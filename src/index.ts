@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { ShopifyAuth } from "./lib/shopifyAuth.js";
 import { tools } from "./tools/registry.js";
+import { supabaseQueryTool, supabaseRawSqlTool } from "./tools/supabaseTools.js";
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2));
@@ -82,7 +83,7 @@ if (auth) {
   auth.setGraphQLClient(shopifyClient);
 }
 
-// Initialize all tools with the shared GraphQL client
+// Initialize all Shopify tools with the shared GraphQL client
 for (const tool of tools) {
   tool.initialize(shopifyClient);
 }
@@ -95,7 +96,7 @@ const server = new McpServer({
     "MCP Server for Shopify API, enabling interaction with store data through GraphQL API"
 });
 
-// Register all tools with the MCP server
+// Register all Shopify tools with the MCP server
 for (const tool of tools) {
   server.tool(
     tool.name,
@@ -108,6 +109,29 @@ for (const tool of tools) {
     }
   );
 }
+
+// Register Supabase tools directly (bypasses ShopifyTool interface)
+server.tool(
+  supabaseQueryTool.name,
+  supabaseQueryTool.schema.shape,
+  async (args) => {
+    const result = await supabaseQueryTool.execute(args as any);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result) }]
+    };
+  }
+);
+
+server.tool(
+  supabaseRawSqlTool.name,
+  supabaseRawSqlTool.schema.shape,
+  async (args) => {
+    const result = await supabaseRawSqlTool.execute(args as any);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result) }]
+    };
+  }
+);
 
 // Start HTTP server (required for Claude.ai remote MCP)
 const PORT = process.env.PORT || 3000;
