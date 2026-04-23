@@ -8,7 +8,7 @@ import { randomUUID } from "crypto";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { ShopifyAuth } from "./lib/shopifyAuth.js";
 import { tools } from "./tools/registry.js";
-import { supabaseQueryTool, supabaseRawSqlTool } from "./tools/supabaseTools.js";
+import { supabaseQueryTool, supabaseRawSqlTool, supabaseQueryTestTool, supabaseRawSqlTestTool } from "./tools/supabaseTools.js";
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2));
@@ -127,6 +127,28 @@ server.tool(
   supabaseRawSqlTool.schema.shape,
   async (args) => {
     const result = await supabaseRawSqlTool.execute(args as any);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result) }]
+    };
+  }
+);
+
+server.tool(
+  supabaseQueryTestTool.name,
+  supabaseQueryTestTool.schema.shape,
+  async (args) => {
+    const result = await supabaseQueryTestTool.execute(args as any);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result) }]
+    };
+  }
+);
+
+server.tool(
+  supabaseRawSqlTestTool.name,
+  supabaseRawSqlTestTool.schema.shape,
+  async (args) => {
+    const result = await supabaseRawSqlTestTool.execute(args as any);
     return {
       content: [{ type: "text", text: JSON.stringify(result) }]
     };
