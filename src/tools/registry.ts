@@ -51,6 +51,8 @@ import { getInventoryLevels } from "./getInventoryLevels.js";
 import { getInventoryItems } from "./getInventoryItems.js";
 import { getPriceLists } from "./getPriceLists.js";
 import { getProductVariantsDetailed } from "./getProductVariantsDetailed.js";
+// Supabase tools
+import { supabaseQueryTool, supabaseRawSqlTool, supabaseQueryTestTool, supabaseRawSqlTestTool } from "./supabaseTools.js";
 
 export const tools: ShopifyTool[] = [
   // Products (8)
@@ -105,4 +107,9 @@ export const tools: ShopifyTool[] = [
   getInventoryItems,
   getPriceLists,
   getProductVariantsDetailed,
+  // Supabase (4)
+  supabaseQueryTool,
+  supabaseRawSqlTool,
+  supabaseQueryTestTool,
+  supabaseRawSqlTestTool,
 ];
